@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Travel CRM – Itinerary Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#4f46e5;--p2:#7c3aed;--bg:#f4f6fb;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+h1,h2,h3,h4{font-family:Poppins,sans-serif;margin:0}
+a{color:inherit}
+.app{display:flex;min-height:100vh}
+.side{width:240px;background:linear-gradient(180deg,#1e1b4b,#312e81 60%,#4c1d95);color:#c7d2fe;position:fixed;inset:0 auto 0 0;padding:20px 14px;display:flex;flex-direction:column;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 22px;color:#fff}
+.brand img{width:40px;height:40px;border-radius:10px;object-fit:contain;background:#fff;padding:2px}
+.brand .lg{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f472b6,#f59e0b);display:grid;place-items:center;font-weight:800;font-family:Poppins;flex:none}
+.brand b{font-family:Poppins;font-size:14px;line-height:1.25;display:block}
+.brand small{display:block;color:#a5b4fc;font-size:11px}
+.nav a{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;color:#c7d2fe;text-decoration:none;font-weight:500;margin-bottom:4px;cursor:pointer;white-space:nowrap}
+.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav a.on{background:linear-gradient(90deg,#6366f1,#a855f7);color:#fff;box-shadow:0 6px 18px rgba(99,102,241,.45)}
+.nav svg,.btn svg{width:17px;height:17px;flex:none}
+.sidefoot{margin-top:auto;font-size:11px;color:#a5b4fc;padding:8px;line-height:1.6;word-break:break-all}
+.sync{display:inline-block;margin-top:4px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.1);color:#bbf7d0;font-weight:600}
+.sync.saving{color:#fde68a}.sync.err{color:#fecaca;background:rgba(239,68,68,.25)}
+#login{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 15% 20%,#ec4899 0,transparent 40%),radial-gradient(circle at 85% 80%,#f59e0b 0,transparent 38%),linear-gradient(135deg,#1e1b4b,#4c1d95)}
+#login.hide{display:none}
+.lcard{background:#fff;border-radius:22px;padding:32px 28px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.lcard .lg{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#ec4899);display:grid;place-items:center;color:#fff;margin-bottom:16px}
+.lcard .lg svg{width:28px;height:28px}
+.lcard h2{font-size:22px}.lcard>p{color:#64748b;margin:4px 0 22px}
+.lcard form>div{margin-bottom:14px}
+.lcard .btn{width:100%;justify-content:center;padding:12px}
+.lmsg{display:none;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:14px;line-height:1.45}
+.lmsg.err{display:block;background:#fee2e2;color:#b91c1c}.lmsg.ok{display:block;background:#dcfce7;color:#15803d}
+.lforgot{display:block;text-align:center;margin-top:14px;color:#4f46e5;font-weight:600;font-size:13px;cursor:pointer;background:none;border:0;width:100%;font-family:inherit}
+.lload{text-align:center;padding:20px 0;color:#475569;font-weight:600}
+.spin{width:34px;height:34px;border:4px solid #e0e7ff;border-top-color:#6366f1;border-radius:50%;margin:0 auto 12px;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.main{margin-left:240px;flex:1;padding:24px 28px 90px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.top h1{font-size:22px}
+.top p{margin:3px 0 0;color:var(--mut)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:.15s}
+.btn:hover{filter:brightness(.96);transform:translateY(-1px)}
+.btn.pri{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;box-shadow:0 4px 14px rgba(79,70,229,.3)}
+.btn.sec{background:#eef2ff;color:var(--p)}
+.btn.gh{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.red{background:#fee2e2;color:#b91c1c}
+.btn.grn{background:#dcfce7;color:#15803d}
+.btn.org{background:#ffedd5;color:#c2410c}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,.05);border:1px solid #eef0f5;margin-bottom:18px}
+.card>h3{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.full{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:3px solid #e0e7ff;border-color:var(--p)}
+input[type=color]{padding:3px;height:42px}
+textarea{min-height:90px;resize:vertical;line-height:1.5}
+.hint{font-size:11.5px;color:var(--mut);margin-top:4px}
+.ro{padding:10px 12px;border-radius:10px;background:#f1f5f9;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.stat{border-radius:16px;padding:18px 20px;color:#fff;position:relative;overflow:hidden}
+.stat:after{content:'';position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.15)}
+.stat small{opacity:.9;font-weight:500}
+.stat b{font-size:26px;font-family:Poppins;display:block;margin-top:4px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;gap:10px}
+.li:last-child{border:0}
+.li small{display:block;color:var(--mut);margin-top:2px}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input,.toolbar select{width:auto;flex:1;min-width:160px}
+.tbl{width:100%;border-collapse:collapse}
+.tblw{overflow-x:auto}
+.tbl th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);padding:10px 12px;background:#f8fafc;white-space:nowrap}
+.tbl td{padding:12px;border-top:1px solid #f1f5f9;vertical-align:middle}
+.tbl td small{display:block;color:var(--mut)}
+.tbl .acts{flex-wrap:nowrap}
+.empty{text-align:center;padding:30px;color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.ic{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #eef0f5;box-shadow:0 1px 3px rgba(15,23,42,.05);display:flex;flex-direction:column}
+.ic .im{height:160px;position:relative}
+.ic .im img{width:100%;height:100%;object-fit:cover;display:block}
+.ic .tag{position:absolute;top:10px;left:10px;background:rgba(15,23,42,.7);color:#fff;font-size:11px;padding:4px 9px;border-radius:20px;font-weight:600}
+.ic .bd{padding:14px;flex:1;display:flex;flex-direction:column}
+.ic h4{font-size:15px}
+.ic p{color:var(--mut);font-size:12.5px;margin:6px 0 12px;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.stars{color:#f59e0b}
+.ph{width:100%;height:100%;min-height:100%;display:grid;place-items:center;background:linear-gradient(135deg,#e0e7ff,#fce7f3);color:#6366f1;font-size:12px;font-weight:600}
+.imgf img{margin-top:8px;width:100%;max-height:170px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+/* builder */
+.dayrow{border:1px solid #eef0f5;border-left:5px solid var(--dc);border-radius:14px;padding:14px;margin-bottom:14px;background:#fff}
+.dhead{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.dbadge{background:var(--dc);color:#fff;font-weight:700;font-family:Poppins;padding:5px 12px;border-radius:20px;font-size:12px}
+.ddate{color:var(--mut);font-size:12px;font-weight:600}
+.sp{flex:1}
+.dgrid{display:grid;grid-template-columns:200px 1fr;gap:14px}
+.dimg{height:150px;border-radius:12px;overflow:hidden;background:#f1f5f9}
+.dimg img{width:100%;height:100%;object-fit:cover;display:block}
+.hrow{display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center;border:1px solid #eef0f5;border-left:5px solid var(--dc);border-radius:14px;padding:12px;margin-bottom:12px}
+.hthumb{height:80px;border-radius:10px;overflow:hidden}
+.hthumb img{width:100%;height:100%;object-fit:cover}
+.hg{grid-template-columns:2fr .7fr 1fr 1fr}
+.hmeta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12px;color:var(--mut);font-weight:600}
+.totbox{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px}
+.totbox div{background:#f8fafc;border-radius:12px;padding:12px}
+.totbox small{display:block;color:var(--mut);font-size:11.5px}
+.totbox b{font-family:Poppins;font-size:16px}
+.totbox .big{background:linear-gradient(135deg,#4f46e5,#ec4899);color:#fff}
+.totbox .big small{color:#e0e7ff}
+.stickybar{position:fixed;bottom:0;left:240px;right:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 28px;display:flex;justify-content:flex-end;gap:10px;z-index:15}
+.secttl{font-size:13px;font-weight:700;color:#334155;margin:4px 0 10px;text-transform:uppercase;letter-spacing:.6px}
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:40px 16px}
+#modal.show{display:flex}
+#mBox{background:#fff;border-radius:18px;width:100%;max-width:620px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+#mBox.wide{max-width:820px}
+.mh{padding:18px 22px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.mh h3{font-size:17px}
+.mx{background:none;border:0;font-size:24px;cursor:pointer;color:var(--mut);line-height:1}
+#mBody{padding:20px 22px}
+.mf{padding:14px 22px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:10px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;z-index:200;transition:.3s;opacity:0}
+#toast.show{transform:translateX(-50%);opacity:1}
+.check{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f1f5f9}
+.check .ok{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff;flex:none}
+/* PDF viewer */
+#pdfWrap{position:fixed;inset:0;background:#334155;overflow:auto;z-index:100;display:none;padding:76px 0 40px}
+.pdfbar{position:fixed;top:0;left:0;right:0;height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;gap:10px;padding:0 20px;z-index:101}
+.pdfbar b{font-family:Poppins;flex:1;font-size:14px}
+.pdfbar small{color:#94a3b8;font-weight:400;margin-left:8px}
+
+/* ======== QUOTATION DESIGN ======== */
+#pdf{overflow-wrap:anywhere;word-break:break-word;font-family:Inter,sans-serif;color:#1e293b;font-size:10.5pt;line-height:1.55}
+#pdf section{width:210mm;margin:0 auto 24px;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+#pdf h1,#pdf h2,#pdf h3,#pdf h4{font-family:Poppins,sans-serif}
+.q-cover{height:296mm;position:relative;color:#fff;overflow:hidden;display:flex;flex-direction:column;padding:16mm}
+.q-cover>*{position:relative;z-index:2}
+.q-cover>.q-cbg,.q-cover>.q-cov{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.q-cbg{object-fit:cover}
+.q-cover>.q-cov{z-index:1}
+.q-ctop{display:flex;align-items:center;gap:5mm}
+.q-logo{width:24mm;height:24mm;object-fit:contain;background:#fff;border-radius:5mm;padding:1.5mm;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.q-ctop h2{font-size:21pt;font-weight:700;line-height:1.15}
+.q-ctop p{margin:1mm 0 0;opacity:.92;font-style:italic;font-size:10.5pt}
+.q-cmid{margin-top:auto;margin-bottom:12mm}
+.q-pill{display:inline-block;background:var(--A);padding:2mm 5mm;border-radius:20mm;font-weight:700;font-size:8.5pt;letter-spacing:2.5px;text-transform:uppercase;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.q-cmid h1{font-size:36pt;line-height:1.08;margin:5mm 0 3mm;font-weight:800;text-shadow:0 3px 24px rgba(0,0,0,.35)}
+.q-for{font-size:13pt;margin:0}
+.q-cchips{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.q-chip{background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.35);border-radius:4mm;padding:3.5mm 4mm}
+.q-chip small{display:block;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;opacity:.85}
+.q-chip b{font-family:Poppins;font-size:11pt}
+.q-cfoot{margin-top:7mm;padding-top:5mm;border-top:1px solid rgba(255,255,255,.35);font-size:9.5pt;display:flex;gap:4mm;flex-wrap:wrap;justify-content:center}
+.q-flow{padding:14mm}
+.q-bar{display:flex;align-items:center;gap:4mm;padding:4mm 5mm;border-radius:4mm;background:linear-gradient(90deg,var(--P),var(--A));color:#fff;margin-bottom:6mm}
+.q-bar img{width:13mm;height:13mm;object-fit:contain;background:#fff;border-radius:3mm;padding:1mm}
+.q-bar h3{font-size:13pt;line-height:1.2}
+.q-bar small{opacity:.9;font-size:8.5pt}
+.q-bar .meta{margin-left:auto;text-align:right;font-size:8.5pt;line-height:1.6}
+.q-intro{color:#475569;margin:0 0 4mm;font-size:10pt}
+.q-h{font-size:15pt;color:var(--P);margin:9mm 0 4mm;display:flex;align-items:center;gap:3mm;break-after:avoid;page-break-after:avoid}
+.q-h:after{content:'';flex:1;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--A),rgba(255,255,255,0))}
+.q-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.q-tile{border-radius:3.5mm;padding:3mm 4mm;border-left:4px solid var(--c);background:var(--t)}
+.q-tile small{display:block;font-size:7pt;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:700}
+.q-tile b{font-size:10pt;color:#0f172a}
+.q-price{margin-top:5mm;display:grid;grid-template-columns:1.4fr 1fr;break-inside:avoid;page-break-inside:avoid}
+.q-pl{background:#f8fafc;padding:4mm 6mm;border:1px solid #e2e8f0;border-right:0;border-radius:5mm 0 0 5mm}
+.q-pl div{display:flex;justify-content:space-between;padding:1.3mm 0;border-bottom:1px dashed #e2e8f0;font-size:9.8pt}
+.q-pl div:last-child{border:0}
+.q-pr{background:linear-gradient(135deg,var(--P),var(--A));color:#fff;padding:5mm 6mm;display:flex;flex-direction:column;justify-content:center;border-radius:0 5mm 5mm 0}
+.q-pr small{opacity:.9;text-transform:uppercase;letter-spacing:1.5px;font-size:7.5pt;font-weight:600}
+.q-pr b{font-family:Poppins;font-size:23pt;line-height:1.2}
+.q-pr span{font-size:8.8pt;opacity:.95}
+.q-day{display:grid;grid-template-columns:16mm 1fr;gap:4mm;break-inside:avoid;page-break-inside:avoid;margin-bottom:5mm}
+.q-dl{display:flex;flex-direction:column;align-items:center}
+.q-dn{width:16mm;height:16mm;border-radius:4mm;background:var(--c);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.q-dn small{font-size:6.5pt;letter-spacing:1.5px;font-weight:700}
+.q-dn b{font-family:Poppins;font-size:15pt;line-height:1}
+.q-line{width:2px;flex:1;margin-top:2mm;background:linear-gradient(var(--c),rgba(255,255,255,0))}
+.q-dc{border:1px solid #eef0f5;border-radius:4mm;overflow:hidden;background:#fff}
+.q-dt{padding:3.2mm 5mm;background:var(--t);border-bottom:3px solid var(--c);display:flex;justify-content:space-between;gap:4mm;align-items:center}
+.q-dt h3{font-size:11.2pt;color:#0f172a;line-height:1.3}
+.q-dt span{font-size:8.5pt;color:var(--c);font-weight:700;white-space:nowrap}
+.q-dimg{width:100%;height:60mm;object-fit:cover;display:block}
+.q-dc p{margin:0;padding:3.5mm 5mm;color:#334155;font-size:9.6pt;text-align:justify}
+.q-ov{margin:0 5mm 4mm;display:inline-block;background:var(--t);color:var(--c);font-weight:700;font-size:8.3pt;padding:1.3mm 3.5mm;border-radius:10mm}
+.q-hotels{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.q-hotel{border-radius:4mm;overflow:hidden;border:1px solid #eef0f5;break-inside:avoid;page-break-inside:avoid;background:#fff}
+.q-himg{position:relative;height:40mm;background:linear-gradient(135deg,var(--c),#1e293b)}
+.q-himg img{width:100%;height:100%;object-fit:cover;display:block}
+.q-nb{position:absolute;top:3mm;left:3mm;background:var(--c);color:#fff;font-weight:700;font-size:8.3pt;padding:1.2mm 3mm;border-radius:10mm}
+.q-hb{padding:3.5mm 4.5mm;border-top:3px solid var(--c)}
+.q-hb h4{font-size:11pt;line-height:1.3}
+.q-loc{font-size:8.6pt;color:#64748b;margin-bottom:1.5mm}
+.q-stars{color:#f59e0b;font-size:10pt;letter-spacing:1px}
+.q-hb .r{display:flex;justify-content:space-between;font-size:8.6pt;color:#64748b;padding:.7mm 0;border-bottom:1px dashed #f1f5f9}
+.q-hb .r b{color:#0f172a;text-align:right}
+.q-ie{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.q-box{border-radius:4mm;padding:4.5mm 5mm;break-inside:avoid;page-break-inside:avoid}
+.q-box h4{font-size:11pt;margin-bottom:2mm}
+.q-box ul,.q-pol ul{list-style:none;margin:0;padding:0}
+.q-box li{padding:1mm 0 1mm 6mm;position:relative;font-size:9.4pt}
+.q-in{background:#ecfdf5;border:1px solid #a7f3d0}.q-in h4{color:#047857}
+.q-in li:before{content:'✓';position:absolute;left:0;color:#10b981;font-weight:800}
+.q-ex{background:#fff1f2;border:1px solid #fecdd3}.q-ex h4{color:#be123c}
+.q-ex li:before{content:'✕';position:absolute;left:0;color:#f43f5e;font-weight:800}
+.q-note{background:#fefce8;border:1px solid #fde68a;border-radius:4mm;padding:4mm 5mm;font-size:9.5pt;break-inside:avoid}
+.q-pol{border-radius:4mm;border:1px solid #eef0f5;margin-bottom:4mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+.q-pol h4{background:var(--t);color:var(--c);padding:2.6mm 5mm;font-size:10.5pt;border-left:5px solid var(--c)}
+.q-pol ul{padding:2.5mm 5mm}
+.q-pol li{position:relative;padding:.8mm 0 .8mm 5mm;font-size:9pt;color:#334155}
+.q-pol li:before{content:'';position:absolute;left:0;top:2.6mm;width:1.8mm;height:1.8mm;border-radius:50%;background:var(--c)}
+.q-bc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4mm;break-inside:avoid;page-break-inside:avoid}
+.q-bank{background:linear-gradient(135deg,#0f172a,var(--P));color:#fff;border-radius:5mm;padding:5mm 6mm;position:relative;overflow:hidden}
+.q-bank:after{content:'';position:absolute;right:-14mm;top:-14mm;width:42mm;height:42mm;border-radius:50%;background:var(--A);opacity:.35}
+.q-bank h4{font-size:11pt;margin-bottom:2.5mm;letter-spacing:.5px;position:relative;z-index:1}
+.q-bank .r{display:flex;justify-content:space-between;gap:3mm;align-items:baseline;padding:1.1mm 0;font-size:9pt;border-bottom:1px solid rgba(255,255,255,.14);position:relative;z-index:1}
+.q-bank .r span{opacity:.75;white-space:nowrap;flex:none}
+.q-bank .r b{text-align:right;min-width:0}
+#pdf .q-tiles>*,#pdf .q-hotels>*,#pdf .q-ie>*,#pdf .q-bc>*,#pdf .q-price>*{min-width:0}
+.q-contact{border-radius:5mm;padding:5mm 6mm;background:#fff7ed;border:1px solid #fed7aa}
+.q-contact h4{color:#c2410c;font-size:11pt;margin-bottom:2.5mm}
+.q-contact div{font-size:9.2pt;padding:.9mm 0}
+.q-contact b{color:#9a3412}
+.q-certs{display:flex;gap:4mm;justify-content:center;flex-wrap:wrap;margin-top:6mm;break-inside:avoid}
+.q-certs img{height:15mm;max-width:32mm;object-fit:contain;border:1px solid #eef0f5;border-radius:2mm;padding:1.5mm;background:#fff}
+.q-thanks{margin-top:6mm;border-radius:5mm;padding:6mm;text-align:center;background:linear-gradient(90deg,var(--P),var(--A));color:#fff;break-inside:avoid;page-break-inside:avoid}
+.q-thanks h3{font-size:16pt}
+.q-thanks p{margin:1mm 0 0;opacity:.95;font-size:9.5pt}
+
+@page{size:A4;margin:12mm 0}
+@page :first{margin:0}
+@media print{
+  html,body{background:#fff!important;overflow:visible!important}
+  .app,.pdfbar,#modal,#toast,.stickybar{display:none!important}
+  #pdfWrap{display:block!important;position:static;padding:0;background:#fff;overflow:visible}
+  #pdf section{box-shadow:none;margin:0;width:210mm}
+  .q-cover{height:297mm;page-break-after:always;break-after:page}
+  .q-flow{padding:0 14mm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+@media (max-width:900px){
+  .side{position:sticky;top:0;width:100%;flex-direction:row;align-items:center;padding:8px 10px;overflow-x:auto;inset:auto}
+  .brand{padding:0 8px 0 0}.brand div{display:none}
+  .nav{display:flex;gap:4px}.nav a{margin:0;padding:9px 10px}
+  .sidefoot{display:none}
+  .app{flex-direction:column}
+  .main{margin-left:0;padding:16px 14px 90px}
+  .stickybar{left:0;padding:10px 14px}
+  .g3,.g4,.stats,.hg{grid-template-columns:1fr 1fr}
+  .dgrid,.hrow{grid-template-columns:1fr}
+  .totbox{grid-template-columns:1fr 1fr}
+  .hmeta{align-items:flex-start}
+  #pdf section{transform-origin:top left}
+}
+@media (max-width:560px){.g2,.g3,.g4,.stats,.hg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand" id="brand"></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot" id="sidefoot"></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div id="mBox">
+    <div class="mh"><h3 id="mTitle"></h3><button class="mx" onclick="closeModal()">×</button></div>
+    <div id="mBody"></div>
+    <div class="mf"><button class="btn gh" onclick="closeModal()">Cancel</button><button class="btn pri" onclick="mSave&&mSave()">Save</button></div>
+  </div>
+</div>
+
+<div id="pdfWrap">
+  <div class="pdfbar">
+    <b id="pdfName">Quotation<small>Tip: in the print dialog choose “Save as PDF”, paper A4, and turn on “Background graphics”.</small></b>
+    <button class="btn grn" onclick="printPdf()">⬇ Download / Print PDF</button>
+    <button class="btn gh" onclick="closePdf()">Close</button>
+  </div>
+  <div id="pdfBody"></div>
+</div>
+<div id="toast"></div>
+
+<div id="login">
+  <div class="lcard">
+    <div class="lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <h2>Travel CRM</h2><p>Sign in to manage leads & itineraries</p>
+    <div id="lmsg" class="lmsg"></div>
+    <div id="lload" class="lload" style="display:none"><div class="spin"></div><span id="lloadT">Loading…</span></div>
+    <form id="lform" onsubmit="doLogin(event)">
+      <div><label>Email</label><input id="lemail" type="email" autocomplete="username" required></div>
+      <div><label>Password</label><input id="lpass" type="password" autocomplete="current-password" required></div>
+      <button class="btn pri" id="lbtn" type="submit">Sign in</button>
+      <button class="lforgot" type="button" onclick="forgotPass()">Forgot password?</button>
+    </form>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<!-- =====================================================================
+     FIREBASE SETUP — EDIT ONLY THIS BLOCK
+     1. Paste your web app config from:
+        Firebase Console > Project settings > General > Your apps > SDK setup and configuration > Config
+     2. Put the ONE email that is allowed to log in (the user you created in
+        Firebase Console > Authentication > Users).
+     ===================================================================== -->
+<script>
+const FIREBASE_CONFIG = {
+ apiKey: "AIzaSyDFmCKB8ZA4F6-kiCa0J-N-wyGVivZp2_c",
+  authDomain: "travel-crm-abrar.firebaseapp.com",
+  projectId: "travel-crm-abrar",
+  storageBucket: "travel-crm-abrar.firebasestorage.app",
+  messagingSenderId: "733121844779",
+  appId: "1:733121844779:web:562fc1e72799b9f3aa3c6e"
+};
+const ALLOWED_EMAIL = "PASTE_ADMIN_EMAIL@gmail.com";
+</script>
+<!-- ===================== END OF FIREBASE SETUP ===================== -->
+
+<script>
+/* ---------- storage ---------- */
+const KEY='travelcrm_v1';
+const defSettings={
+  bizName:'Your Travel Company',tagline:'Explore the paradise with glory',logo:'',cover:'',
+  consultant:'',phone:'',whatsapp:'',email:'',website:'',address:'',gstin:'',
+  accName:'',accNo:'',ifsc:'',bank:'',branch:'',upi:'',
+  quotePrefix:'QT',primary:'#4f46e5',accent:'#ec4899',validity:'7',
+  intro:'Thank you for choosing us! We blend local expertise with personalised service to craft journeys that stay with you forever. Here is your tailor-made holiday plan.',
+  inclusions:'Accommodation on twin-sharing basis in the mentioned hotels\nBreakfast & Dinner (MAP) at all hotels\nAll transfers & sightseeing by private cab as per itinerary\n01 hour Shikara ride on Dal Lake (complimentary)\nAll toll taxes, parking charges & driver allowance\nWelcome drink on arrival\n24×7 phone support during the tour',
+  exclusions:'Airfare / train fare\nLocal union vehicles at Pahalgam, Sonamarg & Gulmarg for internal sightseeing\nGondola tickets, pony rides & entry fees\nLunch and personal expenses (laundry, phone calls, tips)\nAnything not mentioned in inclusions',
+  terms:'Hotel check-in time is 2:00 PM; early check-in depends on room availability.\nIf a mentioned hotel is unavailable, a similar category hotel will be provided.\nCommercial & private vehicles are not allowed for internal sightseeing in Sonamarg, Gulmarg & Pahalgam due to local union rules; local vehicles can be booked by us or on the spot.\nChained vehicles from Tangmarg to Gulmarg must be booked on the spot in case of heavy snow.\nPrepaid mobile connections from outside J&K do not work here — please carry a postpaid SIM.\nThe cab stays with you throughout the tour; services missed due to delays are non-refundable.\nComplaints regarding any hotel must be raised before check-out.\nPlease avoid carrying jewellery or expensive items; the company is not responsible for loss.',
+  payment:'30% advance of the total package to confirm the booking.\nBalance payable 10 days before the date of arrival.\nCard payments attract 2% extra bank charges.\nFor 4★ / 5★ properties, full payment is required before confirmation.\nBookings remain tentative until the advance reflects in our account.',
+  cancellation:'More than 30 days before arrival: 20% of package cost\n20–30 days before arrival: 50% of package cost\n10–19 days before arrival: 70% of package cost\nLess than 10 days before arrival: 100% of package cost',
+  privacy:'Your personal details are used only to arrange your bookings.\nInformation is shared only with the hotels and transport partners involved in your trip.\nWe never sell or share your data with third parties for marketing.',
+  certs:'',facebook:'',instagram:''
+};
+function blankDb(){return{leads:[],destinations:[],hotels:[],itins:[],seq:1000,settings:{...defSettings}}}
+function readLocal(){try{const d=JSON.parse(localStorage.getItem(KEY));return d&&d.settings?d:null}catch(e){return null}}
+function fromBackup(d){return{...blankDb(),...d,settings:{...defSettings,...(d.settings||{})}}}
+let db=blankDb();
+
+/* ---------- Firebase (Auth + Firestore) ---------- */
+const COLS=['leads','destinations','hotels','itins'];
+let fauth=null,fdb=null,synced=null,saveQ=Promise.resolve(),pending=0,loginMsg='';
+const clean=o=>JSON.parse(JSON.stringify(o));
+function snap(){synced={meta:JSON.stringify({settings:db.settings,seq:db.seq})};COLS.forEach(c=>{synced[c]={};db[c].forEach(x=>synced[c][x.id]=JSON.stringify(x))})}
+function save(){pending++;syncState('saving');saveQ=saveQ.then(pushChanges).then(()=>{pending--;if(!pending)syncState('ok')},e=>{pending--;console.error(e);syncState('err');toast(errMsg(e))});return saveQ}
+async function pushChanges(){
+  if(!synced||!fdb)return;
+  const ops=[];
+  COLS.forEach(c=>{const seen=new Set();
+    db[c].forEach((x,i)=>{seen.add(x.id);if(!(x.id in synced[c]))x._ts=Date.now()+i;const j=JSON.stringify(x);if(synced[c][x.id]!==j)ops.push({c,id:x.id,data:clean(x),j})});
+    Object.keys(synced[c]).forEach(id=>{if(!seen.has(id))ops.push({c,id,del:true})});
+  });
+  const mj=JSON.stringify({settings:db.settings,seq:db.seq});
+  if(mj!==synced.meta)ops.push({c:'meta',id:'main',data:clean({settings:db.settings,seq:db.seq}),j:mj});
+  for(let i=0;i<ops.length;i+=400){
+    const part=ops.slice(i,i+400),b=fdb.batch();
+    part.forEach(o=>{const r=fdb.collection(o.c).doc(o.id);o.del?b.delete(r):b.set(r,o.data)});
+    await b.commit();
+    part.forEach(o=>{if(o.c==='meta')synced.meta=o.j;else if(o.del)delete synced[o.c][o.id];else synced[o.c][o.id]=o.j});
+  }
+}
+async function loadCloud(){
+  const [m,...cs]=await Promise.all([fdb.collection('meta').doc('main').get(),...COLS.map(c=>fdb.collection(c).get())]);
+  db=blankDb();const md=m.exists?m.data():{};
+  db.settings={...defSettings,...(md.settings||{})};db.seq=md.seq||1000;
+  COLS.forEach((c,i)=>{db[c]=cs[i].docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>(a._ts||0)-(b._ts||0))});
+  snap();
+}
+function errMsg(e){const c=(e&&e.code)||'';
+  if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'Wrong email or password.';
+  if(/invalid-email/.test(c))return 'Please enter a valid email address.';
+  if(/too-many-requests/.test(c))return 'Too many attempts. Please wait a few minutes and try again.';
+  if(/user-disabled/.test(c))return 'This account has been disabled.';
+  if(/permission-denied/.test(c))return 'Access denied by Firestore security rules. Check that the rules contain this exact email.';
+  if(/network|unavailable/.test(c))return 'No internet connection. Please check your network and try again.';
+  if(/api-key|configuration-not-found|operation-not-allowed/.test(c))return 'Firebase is not set up correctly (check the config and that Email/Password sign-in is enabled).';
+  return (e&&e.message)||'Something went wrong.';
+}
+function syncState(st){const e=document.getElementById('syncB');if(!e)return;e.className='sync '+(st==='ok'?'':st);e.textContent=st==='saving'?'⟳ Saving…':st==='err'?'⚠ Not saved – check internet':'☁ All changes saved'}
+function lshow(mode,msg,ok){
+  $('#login').classList.remove('hide');
+  $('#lform').style.display=mode==='form'?'':'none';$('#lload').style.display=mode==='load'?'':'none';
+  if(mode==='load')$('#lloadT').textContent=msg||'Loading…';
+  const m=$('#lmsg');m.className='lmsg'+(mode!=='load'&&msg?(ok?' ok':' err'):'');m.textContent=mode!=='load'?(msg||''):'';
+  if(mode==='form')$('#lbtn').disabled=false;
+}
+const allowed=email=>String(email||'').trim().toLowerCase()===String(ALLOWED_EMAIL||'').trim().toLowerCase();
+async function doLogin(e){
+  e.preventDefault();if(!fauth)return;
+  const email=$('#lemail').value.trim(),pass=$('#lpass').value;
+  if(!allowed(email)){lshow('form','This email is not allowed to use this CRM.');return}
+  $('#lbtn').disabled=true;lshow('load','Signing in…');
+  try{await fauth.signInWithEmailAndPassword(email,pass)}catch(err){lshow('form',errMsg(err))}
+}
+async function forgotPass(){
+  const email=$('#lemail').value.trim();
+  if(!email)return lshow('form','Type your email above, then click “Forgot password?” again.');
+  if(!allowed(email))return lshow('form','This email is not allowed to use this CRM.');
+  try{await fauth.sendPasswordResetEmail(email);lshow('form','Password reset link sent. Check your inbox (and spam folder).',true)}catch(err){lshow('form',errMsg(err))}
+}
+async function logout(){
+  if(pending&&!confirm('Some changes are still saving. Log out anyway?'))return;
+  await fauth.signOut();
+}
+function initFirebase(){
+  if(typeof firebase==='undefined')return lshow('form','Could not load Firebase. Check your internet connection and reload the page.');
+  if(!FIREBASE_CONFIG.apiKey||/PASTE/.test(FIREBASE_CONFIG.apiKey+FIREBASE_CONFIG.projectId)||/PASTE/.test(ALLOWED_EMAIL))
+    return lshow('form','Firebase is not configured yet. Open this file in Notepad and fill in the FIREBASE SETUP block (config + allowed email).');
+  firebase.initializeApp(FIREBASE_CONFIG);fauth=firebase.auth();fdb=firebase.firestore();
+  lshow('load','Checking login…');
+  fauth.onAuthStateChanged(async u=>{
+    if(!u){synced=null;db=blankDb();closePdf();closeModal();$('#main').innerHTML='';lshow('form',loginMsg);loginMsg='';return}
+    if(!allowed(u.email)){loginMsg='This email is not allowed to use this CRM.';await fauth.signOut();return}
+    lshow('load','Loading your data…');
+    try{await loadCloud();$('#login').classList.add('hide');$('#lpass').value='';renderShell();go('dashboard')}
+    catch(err){loginMsg=errMsg(err);await fauth.signOut()}
+  });
+}
+window.addEventListener('beforeunload',e=>{if(pending){e.preventDefault();e.returnValue=''}});
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nl=s=>esc(s).replace(/\n/g,'<br>');
+const lines=s=>String(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+const num=v=>v===''||v==null?'':Number(v);
+const money=n=>'₹ '+Math.round(Number(n||0)).toLocaleString('en-IN');
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>ymd(new Date());
+const fmtD=d=>{if(!d)return '—';const x=new Date(d+'T00:00');return isNaN(x)?d:x.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})};
+const addDays=(d,n)=>{const x=new Date(d+'T00:00');x.setDate(x.getDate()+Number(n||0));return ymd(x)};
+const hexA=(h,a)=>{h=(h||'#4f46e5').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
+const shortUrl=u=>{u=String(u||'').trim().replace(/^https?:\/\//,'').replace(/^www\./,'').split(/[?#]/)[0].replace(/\/+$/,'');return u.length>48?u.slice(0,45)+'…':u};
+const PAL=['#6366f1','#ec4899','#f59e0b','#10b981','#0ea5e9','#8b5cf6','#ef4444','#14b8a6','#f97316'];
+const pimg=src=>src?`<img src="${esc(src)}" alt="" onerror="this.outerHTML='<div class=ph>Image not loading</div>'">`:'<div class="ph">No image</div>';
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2300)}
+const svg=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ic={
+  dashboard:svg('<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>'),
+  leads:svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  destinations:svg('<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'),
+  hotels:svg('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>'),
+  itins:svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>'),
+  settings:svg('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
+  plus:svg('<path d="M12 5v14M5 12h14"/>'),
+  logout:svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')
+};
+const LEAD_ST={New:['#e0e7ff','#4338ca'],Contacted:['#e0f2fe','#0369a1'],'Follow-up':['#fef3c7','#b45309'],Quoted:['#fae8ff','#a21caf'],Booked:['#dcfce7','#15803d'],Lost:['#fee2e2','#b91c1c']};
+const IT_ST={Draft:['#f1f5f9','#475569'],Sent:['#e0f2fe','#0369a1'],Booked:['#dcfce7','#15803d'],Cancelled:['#fee2e2','#b91c1c']};
+const badge=(s,map=LEAD_ST)=>{const c=map[s]||['#f1f5f9','#475569'];return `<span class="badge" style="background:${c[0]};color:${c[1]}">${esc(s)}</span>`};
+const empty=t=>`<div class="empty">${t}</div>`;
+const head=(t,sub,acts='')=>`<div class="top"><div><h1>${t}</h1><p>${sub}</p></div><div class="acts">${acts}</div></div>`;
+const fld=(l,n,v,t='text',x='')=>`<div><label>${l}</label><input name="${n}" type="${t}" value="${esc(v)}" ${x}></div>`;
+const sel=(l,n,v,opts)=>`<div><label>${l}</label><select name="${n}">${opts.map(o=>{const[val,lab]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''}>${esc(lab)}</option>`}).join('')}</select></div>`;
+const ta=(l,n,v,cls='full')=>`<div class="${cls}"><label>${l}</label><textarea name="${n}">${esc(v)}</textarea></div>`;
+const imgFld=(l,n,v)=>`<div class="imgf full"><label>${l}</label><input name="${n}" value="${esc(v)}" placeholder="https://… (right-click an image online → Copy image address)" oninput="const i=this.parentNode.querySelector('img');i.src=this.value;i.style.display=this.value?'block':'none'"><img src="${esc(v)}" style="display:${v?'block':'none'}" alt=""><div class="hint">Paste a direct image address (ending in .jpg / .png / .webp works best). Uploads are not used.</div></div>`;
+const destName=id=>(db.destinations.find(d=>d.id===id)||{}).name||'';
+const pax=it=>`${it.adults||0} Adult${+it.adults===1?'':'s'}${+it.children?` + ${it.children} Child`:''}`;
+function calc(it){const p=it.price||{};const cost=+p.cost||0,disc=+p.discount||0,sub=Math.max(0,cost-disc),gstAmt=Math.round(sub*(+p.gst||0)/100),total=sub+gstAmt,adv=Math.round(total*(+p.advance||0)/100);return{cost,disc,sub,gstAmt,total,adv,bal:total-adv}}
+
+/* ---------- modal ---------- */
+let mSave=null;
+function openModal(t,body,onSave,wide){$('#mTitle').textContent=t;$('#mBody').innerHTML=body;$('#mBox').classList.toggle('wide',!!wide);$('#modal').classList.add('show');mSave=onSave}
+function closeModal(){$('#modal').classList.remove('show');mSave=null}
+function formData(){const o={};document.querySelectorAll('#mBody [name]').forEach(e=>o[e.name]=e.type==='number'?num(e.value):e.value.trim());return o}
+
+/* ---------- navigation ---------- */
+const NAV=[['dashboard','Dashboard'],['leads','Leads'],['destinations','Destinations'],['hotels','Hotels'],['itins','Itineraries'],['settings','Settings']];
+let view='dashboard',cur=null;
+function renderShell(){
+  const s=db.settings;
+  $('#brand').innerHTML=(s.logo?`<img src="${esc(s.logo)}" alt="" onerror="this.style.display='none'">`:`<div class="lg">${esc((s.bizName||'T')[0])}</div>`)+`<div><b>${esc(s.bizName)}</b><small>Travel CRM</small></div>`;
+  $('#nav').innerHTML=NAV.map(([k,l])=>`<a data-v="${k}" onclick="go('${k}')">${ic[k]}<span>${l}</span></a>`).join('')+`<a onclick="logout()">${ic.logout}<span>Logout</span></a>`;
+  const u=fauth&&fauth.currentUser;$('#sidefoot').innerHTML=`Signed in as<br><b style="color:#fff">${esc(u?u.email:'')}</b><br><span class="sync" id="syncB">☁ All changes saved</span>`;
+}
+function go(v,arg){
+  view=v;const m=$('#main');m.oninput=null;m.onchange=null;
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===(v==='builder'?'itins':v)));
+  m.innerHTML=V[v](arg);window.scrollTo(0,0);
+  if(v==='builder')bindBuilder();
+}
+
+/* ---------- views ---------- */
+const stat=(l,v,g)=>`<div class="stat" style="background:${g}"><small>${l}</small><b>${v}</b></div>`;
+const V={
+dashboard(){
+  const s=db.settings,booked=db.itins.filter(i=>i.status==='Booked'),val=booked.reduce((a,i)=>a+calc(i).total,0);
+  const chk=(ok,t,act)=>`<div class="check"><span class="ok" style="background:${ok?'#10b981':'#cbd5e1'}">${ok?'✓':''}</span><div style="flex:1">${t}</div>${ok?'':act}</div>`;
+  return head('Dashboard',esc(s.bizName)+' · overview',`<button class="btn sec" onclick="leadForm()">${ic.plus} Add Lead</button><button class="btn pri" onclick="newItin()">${ic.plus} New Itinerary</button>`)+
+  `<div class="stats">${stat('Total Leads',db.leads.length,'linear-gradient(135deg,#6366f1,#8b5cf6)')}${stat('New Leads',db.leads.filter(l=>l.status==='New').length,'linear-gradient(135deg,#ec4899,#f43f5e)')}${stat('Itineraries',db.itins.length,'linear-gradient(135deg,#f59e0b,#f97316)')}${stat('Booked Value',money(val),'linear-gradient(135deg,#10b981,#0ea5e9)')}</div>
+  <div class="grid g2">
+   <div class="card"><h3><span class="dot" style="background:#ec4899"></span>Recent Leads</h3>${db.leads.slice(-6).reverse().map(l=>`<div class="li"><div><b>${esc(l.name)}</b><small>${esc(l.destination||'—')} · ${fmtD(l.travelDate)} · ${esc(l.phone||'')}</small></div>${badge(l.status)}</div>`).join('')||empty('No leads yet')}</div>
+   <div class="card"><h3><span class="dot" style="background:#f59e0b"></span>Recent Itineraries</h3>${db.itins.slice(-6).reverse().map(i=>`<div class="li"><div><b>${esc(i.client.name)}</b><small>${esc(i.quoteNo)} · ${esc(i.title)} · ${money(calc(i).total)}</small></div><button class="btn sm sec" onclick="showPdf('${i.id}')">PDF</button></div>`).join('')||empty('No itineraries yet')}</div>
+  </div>
+  <div class="card"><h3><span class="dot" style="background:#10b981"></span>Setup checklist</h3>
+   ${chk(s.bizName!==defSettings.bizName&&s.phone,'Business name & contact details',`<button class="btn sm sec" onclick="go('settings')">Open Settings</button>`)}
+   ${chk(s.logo,'Logo & cover image',`<button class="btn sm sec" onclick="go('settings')">Add</button>`)}
+   ${chk(s.accNo,'Bank details',`<button class="btn sm sec" onclick="go('settings')">Add</button>`)}
+   ${chk(db.destinations.length,'At least one destination',`<button class="btn sm sec" onclick="go('destinations')">Add</button>`)}
+   ${chk(db.hotels.length,'At least one hotel',`<button class="btn sm sec" onclick="go('hotels')">Add</button>`)}
+  </div>`;
+},
+leads(){
+  return head('Leads','Track enquiries and turn them into quotations',`<button class="btn pri" onclick="leadForm()">${ic.plus} Add Lead</button>`)+
+  `<div class="card"><div class="toolbar"><input id="lq" placeholder="Search name, phone, destination…" oninput="$('#lrows').innerHTML=leadRows()"><select id="lf" onchange="$('#lrows').innerHTML=leadRows()"><option value="">All statuses</option>${Object.keys(LEAD_ST).map(s=>`<option>${s}</option>`).join('')}</select></div>
+  <div class="tblw"><table class="tbl"><thead><tr><th>Client</th><th>Trip</th><th>Travellers</th><th>Source</th><th>Status</th><th></th></tr></thead><tbody id="lrows">${leadRows()}</tbody></table></div></div>`;
+},
+destinations(){
+  return head('Destinations','Places with images & descriptions — reused in every itinerary',`<button class="btn pri" onclick="destForm()">${ic.plus} Add Destination</button>`)+
+  (db.destinations.length?`<div class="cards">${db.destinations.map(d=>`<div class="ic"><div class="im">${pimg(d.img)}${d.region?`<span class="tag">${esc(d.region)}</span>`:''}</div><div class="bd"><h4>${esc(d.name)}</h4><p>${esc(d.desc)}</p><div class="acts"><button class="btn sm sec" onclick="destForm('${d.id}')">Edit</button><button class="btn sm red" onclick="delItem('destinations','${d.id}')">Delete</button></div></div></div>`).join('')}</div>`:`<div class="card">${empty('No destinations yet. Add places like Srinagar, Gulmarg, Pahalgam, Sonamarg…')}</div>`);
+},
+hotels(){
+  return head('Hotels','Hotels, resorts & houseboats with images',`<button class="btn pri" onclick="hotelForm()">${ic.plus} Add Hotel</button>`)+
+  `<div class="toolbar"><select id="hf" onchange="$('#hcards').innerHTML=hotelCards()"><option value="">All destinations</option>${db.destinations.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select></div><div id="hcards">${hotelCards()}</div>`;
+},
+itins(){
+  return head('Itineraries','All quotations you have created',`<button class="btn pri" onclick="newItin()">${ic.plus} Create Itinerary</button>`)+
+  `<div class="card"><div class="toolbar"><input id="iq" placeholder="Search client, quote ID, package…" oninput="$('#irows').innerHTML=itinRows()"></div>
+  <div class="tblw"><table class="tbl"><thead><tr><th>Quote</th><th>Client</th><th>Package</th><th>Travel</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="irows">${itinRows()}</tbody></table></div></div>`;
+},
+builder(){
+  const c=cur;
+  const bf=(l,p,v,t='text',x='')=>`<div><label>${l}</label><input data-f="${p}" type="${t}" value="${esc(v)}" ${x}></div>`;
+  const bs=(l,p,v,opts)=>`<div><label>${l}</label><select data-f="${p}">${opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+  return head(c.id?'Edit Itinerary · '+esc(c.quoteNo):'Create Itinerary','Build a beautiful quotation for your client',`<button class="btn gh" onclick="go('itins')">Cancel</button>`)+
+  `<div class="card"><h3><span class="dot" style="background:#6366f1"></span>Client</h3><div class="grid g4">
+    <div><label>Pick from leads</label><select onchange="pickLead(this.value)"><option value="">— Select a lead —</option>${db.leads.map(l=>`<option value="${l.id}" ${l.id===c.leadId?'selected':''}>${esc(l.name)}${l.phone?' · '+esc(l.phone):''}</option>`).join('')}</select></div>
+    ${bf('Client name *','client.name',c.client.name)}${bf('Phone / WhatsApp','client.phone',c.client.phone)}${bf('Email','client.email',c.client.email,'email')}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#ec4899"></span>Trip details</h3><div class="grid g4">
+    <div style="grid-column:span 2"><label>Package title</label><input data-f="title" value="${esc(c.title)}" placeholder="e.g. Kashmir Family Tour Package"></div>
+    ${bf('Start date','start',c.start,'date')}
+    <div><label>Nights</label><div style="display:flex;gap:6px"><input data-f="nights" type="number" min="0" value="${esc(c.nights)}"><span class="ro" id="daysCount" style="white-space:nowrap">${(+c.nights||0)+1} Days</span></div></div>
+    ${bf('Adults','adults',c.adults,'number','min="0"')}${bf('Children','children',c.children,'number','min="0"')}${bf('Child with bed (CWB)','cwb',c.cwb,'number','min="0"')}${bf('Child without bed (CWOB)','cwob',c.cwob,'number','min="0"')}
+    ${bf('Rooms','rooms',c.rooms,'number','min="0"')}${bf('Extra beds','extraBed',c.extraBed,'number','min="0"')}${bf('Vehicle / Cab','vehicle',c.vehicle,'text','placeholder="e.g. Scorpio (6+1)"')}
+    ${bs('Meal plan','meal',c.meal,['MAP (Breakfast & Dinner)','CP (Breakfast only)','AP (All meals)','EP (Room only)'])}
+    ${bf('Pickup location','pickup',c.pickup,'text','placeholder="Srinagar Airport"')}${bf('Drop location','drop',c.drop,'text','placeholder="Srinagar Airport"')}
+    ${bf('Flight / train details','flight',c.flight,'text','placeholder="Optional"')}
+    ${bs('Status','status',c.status,Object.keys(IT_ST))}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#f59e0b"></span>Day-wise plan</h3>
+    <div id="days"></div>
+    <div class="acts"><button class="btn sec" onclick="addDay()">${ic.plus} Add day</button><button class="btn gh" onclick="syncDays()">Match days to nights</button></div>
+  </div>
+  <div class="card"><h3><span class="dot" style="background:#10b981"></span>Hotels</h3>
+    <div id="hotels"></div>
+    <button class="btn sec" onclick="addHotel()">${ic.plus} Add hotel</button>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3><span class="dot" style="background:#10b981"></span>Inclusions <small style="font-weight:400;color:#64748b">(one per line)</small></h3><textarea data-f="inclusions" style="min-height:170px">${esc(c.inclusions)}</textarea></div>
+    <div class="card"><h3><span class="dot" style="background:#ef4444"></span>Exclusions <small style="font-weight:400;color:#64748b">(one per line)</small></h3><textarea data-f="exclusions" style="min-height:170px">${esc(c.exclusions)}</textarea></div>
+  </div>
+  <div class="card"><h3><span class="dot" style="background:#8b5cf6"></span>Pricing</h3><div class="grid g4">
+    ${bf('Package cost (₹)','price.cost',c.price.cost,'number','min="0"')}${bf('Discount (₹)','price.discount',c.price.discount,'number','min="0"')}${bf('GST %','price.gst',c.price.gst,'number','min="0"')}${bf('Advance %','price.advance',c.price.advance,'number','min="0" max="100"')}
+  </div><div class="totbox" id="tot"></div></div>
+  <div class="card"><h3><span class="dot" style="background:#0ea5e9"></span>Special note for client <small style="font-weight:400;color:#64748b">(optional)</small></h3><textarea data-f="notes" placeholder="e.g. Rates valid for the mentioned dates only…">${esc(c.notes)}</textarea></div>
+  <div class="stickybar"><button class="btn gh" onclick="go('itins')">Cancel</button><button class="btn sec" onclick="saveItin()">Save</button><button class="btn pri" onclick="saveItin(true)">Save & Preview PDF</button></div>`;
+},
+settings(){
+  const s=db.settings;
+  const sf=(l,k,t='text',x='')=>`<div><label>${l}</label><input data-s="${k}" type="${t}" value="${esc(s[k])}" ${x}></div>`;
+  const st=(l,k,h='')=>`<div class="full"><label>${l}</label><textarea data-s="${k}" style="min-height:130px">${esc(s[k])}</textarea>${h?`<div class="hint">${h}</div>`:''}</div>`;
+  const si=(l,k)=>`<div class="imgf"><label>${l}</label><input data-s="${k}" value="${esc(s[k])}" placeholder="https://…" oninput="const i=this.parentNode.querySelector('img');i.src=this.value;i.style.display=this.value?'block':'none'"><img src="${esc(s[k])}" style="display:${s[k]?'block':'none'};object-fit:contain;background:#f8fafc" alt=""></div>`;
+  return head('Settings','Business profile, branding, bank details & policies',`<button class="btn pri" onclick="saveSettings()">Save Settings</button>`)+
+  `<div class="card"><h3><span class="dot" style="background:#6366f1"></span>Business</h3><div class="grid g3">
+    ${sf('Business name','bizName')}${sf('Tagline','tagline')}${sf('Holiday consultant','consultant')}
+    ${sf('Phone','phone')}${sf('WhatsApp','whatsapp')}${sf('Email','email','email')}
+    ${sf('Website','website')}${sf('GSTIN','gstin')}${sf('Address','address')}
+    ${sf('Facebook URL','facebook')}${sf('Instagram URL','instagram')}${sf('Quote valid for (days)','validity','number')}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#ec4899"></span>Branding</h3><div class="grid g2">
+    ${si('Logo image address','logo')}${si('Cover / background image address (PDF cover)','cover')}
+  </div><div class="grid g4" style="margin-top:14px">
+    ${sf('Primary colour','primary','color')}${sf('Accent colour','accent','color')}${sf('Quote ID prefix','quotePrefix')}
+    <div><label>Preview</label><div style="height:42px;border-radius:10px;background:linear-gradient(90deg,${esc(s.primary)},${esc(s.accent)})"></div></div>
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#0f172a"></span>Bank & payment</h3><div class="grid g3">
+    ${sf('Account name','accName')}${sf('Account number','accNo')}${sf('IFSC','ifsc')}${sf('Bank name','bank')}${sf('Branch','branch')}${sf('UPI / GPay','upi')}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#10b981"></span>Default content for new itineraries</h3><div class="grid g2">
+    ${st('Welcome / intro text','intro')}<div></div>${st('Default inclusions','inclusions','One item per line')}${st('Default exclusions','exclusions','One item per line')}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#f59e0b"></span>Policies (printed on every PDF)</h3><div class="grid g2">
+    ${st('Terms & conditions','terms','One point per line')}${st('Payment terms','payment','One point per line')}${st('Cancellation policy','cancellation','One point per line')}${st('Privacy policy','privacy','One point per line')}
+    ${st('Certification / affiliation logos','certs','One image address per line (MSME, IATTE, ISO, J&K Tourism…)')}
+  </div></div>
+  <div class="card"><h3><span class="dot" style="background:#ef4444"></span>Backup & data</h3>
+    <p style="color:#64748b;margin:0 0 12px">All data is stored securely in your Firebase cloud database, so it is the same on every device you log in from. You can still download a backup file anytime.</p>
+    <div class="acts">${readLocal()?`<button class="btn org" onclick="migrateLocal()">⇪ Move old browser data to cloud</button>`:''}<button class="btn grn" onclick="exportData()">⬇ Download backup</button><label class="btn sec" style="margin:0">⬆ Import backup<input type="file" accept=".json" hidden onchange="importData(this)"></label><button class="btn red" onclick="resetAll()">Erase all data</button></div>
+  </div>
+  <div class="stickybar"><button class="btn pri" onclick="saveSettings()">Save Settings</button></div>`;
+}
+};
+
+/* ---------- leads ---------- */
+function leadRows(){
+  const q=($('#lq')?.value||'').toLowerCase(),f=$('#lf')?.value||'';
+  const rows=db.leads.filter(l=>(!f||l.status===f)&&(!q||[l.name,l.phone,l.email,l.destination].join(' ').toLowerCase().includes(q))).reverse();
+  return rows.map(l=>`<tr><td><b>${esc(l.name)}</b><small>${esc(l.phone||'')}${l.email?' · '+esc(l.email):''}</small></td>
+  <td>${esc(l.destination||'—')}<small>${fmtD(l.travelDate)}${l.nights?` · ${l.nights}N`:''}${l.budget?' · '+money(l.budget):''}</small></td>
+  <td>${pax(l)}</td><td>${esc(l.source||'—')}</td>
+  <td><select onchange="setLeadStatus('${l.id}',this.value)" style="width:auto;padding:5px 8px">${Object.keys(LEAD_ST).map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}</select></td>
+  <td><div class="acts"><button class="btn sm pri" onclick="newItin('${l.id}')">Create Itinerary</button>${waBtn(l.phone)}<button class="btn sm gh" onclick="leadForm('${l.id}')">Edit</button><button class="btn sm red" onclick="delItem('leads','${l.id}')">✕</button></div></td></tr>`).join('')||`<tr><td colspan="6">${empty('No leads found')}</td></tr>`;
+}
+const waNum=p=>{let d=String(p||'').replace(/\D/g,'');if(d.length===10)d='91'+d;return d};
+const waBtn=p=>p?`<a class="btn sm grn" target="_blank" href="https://wa.me/${waNum(p)}">WhatsApp</a>`:'';
+function setLeadStatus(id,s){const l=db.leads.find(x=>x.id===id);if(l){l.status=s;save();toast('Status updated')}}
+function leadForm(id){
+  const l=db.leads.find(x=>x.id===id)||{status:'New',adults:2,children:0,source:'WhatsApp'};
+  openModal(id?'Edit Lead':'Add Lead',`<div class="grid g2">
+    ${fld('Client name *','name',l.name)}${fld('Phone / WhatsApp','phone',l.phone)}${fld('Email','email',l.email,'email')}${fld('Destination interested','destination',l.destination,'text','placeholder="e.g. Kashmir"')}
+    ${fld('Travel date','travelDate',l.travelDate,'date')}${fld('Nights','nights',l.nights,'number','min="0"')}${fld('Adults','adults',l.adults,'number','min="0"')}${fld('Children','children',l.children,'number','min="0"')}
+    ${fld('Budget (₹)','budget',l.budget,'number','min="0"')}${sel('Source','source',l.source,['WhatsApp','Phone call','Instagram','Facebook','Website','Referral','Walk-in','Other'])}
+    ${sel('Status','status',l.status,Object.keys(LEAD_ST))}<div></div>${ta('Notes','notes',l.notes)}</div>`,()=>{
+    const d=formData();if(!d.name)return toast('Client name is required');
+    if(id)Object.assign(l,d);else db.leads.push({id:uid(),created:today(),...d});
+    save();closeModal();toast('Lead saved');go(view==='dashboard'?'dashboard':'leads');
+  });
+}
+
+/* ---------- destinations ---------- */
+function destForm(id){
+  const d=db.destinations.find(x=>x.id===id)||{};
+  openModal(id?'Edit Destination':'Add Destination',`<div class="grid g2">
+    ${fld('Destination name *','name',d.name,'text','placeholder="e.g. Gulmarg"')}${fld('Region / State','region',d.region,'text','placeholder="e.g. Kashmir"')}
+    ${imgFld('Image address','img',d.img)}
+    ${ta('Description (auto-fills the day plan)','desc',d.desc)}
+    ${fld('Best time to visit','best',d.best)}${fld('Highlights (comma separated)','highlights',d.highlights)}</div>`,()=>{
+    const f=formData();if(!f.name)return toast('Name is required');
+    if(id)Object.assign(d,f);else db.destinations.push({id:uid(),...f});
+    save();closeModal();toast('Destination saved');go('destinations');
+  },true);
+}
+
+/* ---------- hotels ---------- */
+function hotelCards(){
+  const f=$('#hf')?.value||'';const list=db.hotels.filter(h=>!f||h.destId===f);
+  if(!list.length)return `<div class="card">${empty(db.hotels.length?'No hotels in this destination':'No hotels yet. Add your partner hotels, resorts & houseboats.')}</div>`;
+  return `<div class="cards">${list.map(h=>`<div class="ic"><div class="im">${pimg(h.img)}<span class="tag">${esc(h.type||'Hotel')}</span></div><div class="bd"><h4>${esc(h.name)}</h4>
+  <div style="font-size:12px;color:#64748b;margin-top:3px">${esc(destName(h.destId)||h.location||'')} ${h.stars?`<span class="stars">${'★'.repeat(+h.stars)}</span>`:''}</div>
+  <p>${esc(h.category||'')}${h.rooms?' · '+esc(h.rooms):''}${h.desc?' — '+esc(h.desc):''}</p>
+  <div class="acts"><button class="btn sm sec" onclick="hotelForm('${h.id}')">Edit</button><button class="btn sm red" onclick="delItem('hotels','${h.id}')">Delete</button></div></div></div>`).join('')}</div>`;
+}
+function hotelForm(id){
+  const h=db.hotels.find(x=>x.id===id)||{type:'Hotel',stars:3};
+  openModal(id?'Edit Hotel':'Add Hotel',`<div class="grid g2">
+    ${fld('Hotel name *','name',h.name)}${sel('Destination','destId',h.destId,[['','— Select —'],...db.destinations.map(d=>[d.id,d.name])])}
+    ${sel('Property type','type',h.type,['Hotel','Resort','Houseboat','Cottage','Homestay','Camp','Villa'])}${sel('Star rating','stars',h.stars,[['','—'],1,2,3,4,5])}
+    ${fld('Category label','category',h.category,'text','placeholder="e.g. 3 Star Deluxe"')}${fld('Room types (comma separated)','rooms',h.rooms,'text','placeholder="Deluxe, Super Deluxe, Suite"')}
+    ${fld('Google rating','rating',h.rating,'text','placeholder="e.g. 4.3"')}${fld('Area / address','location',h.location)}
+    ${imgFld('Image address','img',h.img)}
+    ${ta('About the hotel','desc',h.desc)}${fld('Amenities','amenities',h.amenities,'text','placeholder="Wi-Fi, Heater, Room service, Parking"')}</div>`,()=>{
+    const f=formData();if(!f.name)return toast('Hotel name is required');
+    if(id)Object.assign(h,f);else db.hotels.push({id:uid(),...f});
+    save();closeModal();toast('Hotel saved');go('hotels');
+  },true);
+}
+function delItem(col,id){if(!confirm('Delete this item permanently?'))return;db[col]=db[col].filter(x=>x.id!==id);save();toast('Deleted');go(col==='itins'?'itins':col)}
+
+/* ---------- itinerary builder ---------- */
+const blankDay=()=>({title:'',destId:'',img:'',desc:'',overnight:''});
+function newItin(leadId){
+  const s=db.settings,l=db.leads.find(x=>x.id===leadId)||{};const n=l.nights!==''&&l.nights!=null?+l.nights:4;
+  cur={id:'',quoteNo:'',status:'Draft',leadId:leadId||'',client:{name:l.name||'',phone:l.phone||'',email:l.email||''},
+    title:l.destination?`${l.destination} Tour Package`:'',start:l.travelDate||'',nights:n,adults:l.adults??2,children:l.children??0,cwb:0,cwob:0,rooms:1,extraBed:0,
+    pickup:'',drop:'',vehicle:'',flight:'',meal:'MAP (Breakfast & Dinner)',days:Array.from({length:n+1},blankDay),hotels:[],
+    price:{cost:l.budget||'',discount:0,gst:0,advance:30},inclusions:s.inclusions,exclusions:s.exclusions,notes:'',created:''};
+  go('builder');
+}
+function editItin(id){const it=db.itins.find(x=>x.id===id);if(!it)return;cur=JSON.parse(JSON.stringify(it));go('builder')}
+function setPath(o,p,v){const k=p.split('.');let t=o;k.slice(0,-1).forEach(x=>{t[x]=t[x]||{};t=t[x]});t[k[k.length-1]]=v}
+function collect(){
+  const m=$('#main');
+  m.querySelectorAll('[data-f]').forEach(e=>setPath(cur,e.dataset.f,e.type==='number'?num(e.value):e.value));
+  cur.days=[...m.querySelectorAll('.dayrow')].map(r=>{const o={};r.querySelectorAll('[data-d]').forEach(e=>o[e.dataset.d]=e.value);return o});
+  cur.hotels=[...m.querySelectorAll('.hrow')].map(r=>{const o={};r.querySelectorAll('[data-h]').forEach(e=>o[e.dataset.h]=e.type==='number'?num(e.value):e.value);return o});
+}
+const destOpts=v=>db.destinations.map(d=>`<option value="${d.id}" ${d.id===v?'selected':''}>${esc(d.name)}</option>`).join('');
+function hotelOpts(v){
+  const groups={};db.hotels.forEach(h=>{const g=destName(h.destId)||'Other';(groups[g]=groups[g]||[]).push(h)});
+  return Object.entries(groups).map(([g,hs])=>`<optgroup label="${esc(g)}">${hs.map(h=>`<option value="${h.id}" ${h.id===v?'selected':''}>${esc(h.name)}${h.category?' · '+esc(h.category):''}</option>`).join('')}</optgroup>`).join('');
+}
+function renderDays(){
+  const df=(l,k,v)=>`<div><label>${l}</label><input data-d="${k}" value="${esc(v)}"></div>`;
+  $('#days').innerHTML=cur.days.map((d,i)=>`<div class="dayrow" style="--dc:${PAL[i%PAL.length]}">
+    <div class="dhead"><span class="dbadge">Day ${i+1}</span><span class="ddate">${cur.start?fmtD(addDays(cur.start,i)):''}</span><span class="sp"></span>
+    <button class="btn sm gh" onclick="moveDay(${i},-1)" title="Move up">↑</button><button class="btn sm gh" onclick="moveDay(${i},1)" title="Move down">↓</button><button class="btn sm red" onclick="delDay(${i})">Remove</button></div>
+    <div class="dgrid"><div class="dimg">${pimg(d.img)}</div><div class="grid g2">
+      <div><label>Destination (auto-fills image & text)</label><select data-d="destId" onchange="dayDest(${i},this.value)"><option value="">— Choose —</option>${destOpts(d.destId)}</select></div>
+      ${df('Day title','title',d.title)}
+      <div><label>Image address</label><input data-d="img" value="${esc(d.img)}" placeholder="https://…" oninput="this.closest('.dayrow').querySelector('.dimg').innerHTML=pimg(this.value)"></div>
+      ${df('Overnight stay','overnight',d.overnight)}
+      <div class="full"><label>Description</label><textarea data-d="desc">${esc(d.desc)}</textarea></div>
+    </div></div></div>`).join('')||empty('No days yet');
+}
+function dayDest(i,id){collect();const d=db.destinations.find(x=>x.id===id),day=cur.days[i];
+  if(d){day.img=d.img||day.img;day.desc=d.desc||day.desc;if(!day.title)day.title=d.name;if(!day.overnight)day.overnight=d.name}renderDays()}
+function addDay(){collect();cur.days.push(blankDay());renderDays()}
+function delDay(i){collect();cur.days.splice(i,1);renderDays()}
+function moveDay(i,dir){collect();const j=i+dir;if(j<0||j>=cur.days.length)return;[cur.days[i],cur.days[j]]=[cur.days[j],cur.days[i]];renderDays()}
+function syncDays(){collect();const n=(+cur.nights||0)+1;
+  if(cur.days.length>n&&!confirm(`This will remove the last ${cur.days.length-n} day(s). Continue?`))return;
+  while(cur.days.length<n)cur.days.push(blankDay());cur.days.length=n;renderDays()}
+function renderHotels(){
+  let d=cur.start;
+  $('#hotels').innerHTML=cur.hotels.length?cur.hotels.map((h,i)=>{const H=db.hotels.find(x=>x.id===h.hotelId)||{};const ci=d,co=d?addDays(d,+h.nights||1):'';d=co;
+    return `<div class="hrow" style="--dc:${PAL[(i+3)%PAL.length]}"><div class="hthumb">${pimg(H.img)}</div>
+    <div class="grid hg"><div><label>Hotel</label><select data-h="hotelId" onchange="hotelPick(${i},this.value)"><option value="">— Choose hotel —</option>${hotelOpts(h.hotelId)}</select></div>
+    <div><label>Nights</label><input data-h="nights" type="number" min="1" value="${esc(h.nights)}" onchange="collect();renderHotels()"></div>
+    <div><label>Room type</label><input data-h="room" value="${esc(h.room)}"></div><div><label>Meal plan</label><input data-h="meal" value="${esc(h.meal)}"></div></div>
+    <div class="hmeta">${ci?fmtD(ci)+' → '+fmtD(co):''}<button class="btn sm red" onclick="delHotel(${i})">Remove</button></div></div>`}).join('')
+    :empty(db.hotels.length?'No hotels added to this itinerary yet':'Add hotels in the Hotels section first, then pick them here');
+}
+function addHotel(){collect();cur.hotels.push({hotelId:'',nights:1,room:'',meal:(cur.meal||'').split(' ')[0]});renderHotels()}
+function delHotel(i){collect();cur.hotels.splice(i,1);renderHotels()}
+function hotelPick(i,id){collect();const H=db.hotels.find(x=>x.id===id);if(H&&!cur.hotels[i].room)cur.hotels[i].room=(H.rooms||'').split(',')[0].trim();renderHotels()}
+function pickLead(id){collect();const l=db.leads.find(x=>x.id===id);if(!l)return;
+  cur.leadId=id;cur.client={name:l.name||'',phone:l.phone||'',email:l.email||''};
+  if(!cur.title&&l.destination)cur.title=l.destination+' Tour Package';if(l.travelDate)cur.start=l.travelDate;
+  if(l.adults!=='')cur.adults=l.adults;if(l.children!=='')cur.children=l.children;go('builder')}
+function updateTot(){
+  const g=k=>+($(`[data-f="price.${k}"]`).value)||0;
+  const c=calc({price:{cost:g('cost'),discount:g('discount'),gst:g('gst'),advance:g('advance')}});
+  $('#tot').innerHTML=`<div><small>Package cost</small><b>${money(c.cost)}</b></div><div><small>Discount</small><b>− ${money(c.disc)}</b></div><div><small>GST</small><b>${money(c.gstAmt)}</b></div><div class="big"><small>Total payable</small><b>${money(c.total)}</b></div><div><small>Advance to confirm</small><b>${money(c.adv)}</b></div>`;
+}
+function bindBuilder(){
+  renderDays();renderHotels();updateTot();
+  const m=$('#main');
+  m.oninput=e=>{const f=e.target.dataset.f||'';if(f.startsWith('price.'))updateTot();if(f==='nights')$('#daysCount').textContent=((+e.target.value||0)+1)+' Days'};
+  m.onchange=e=>{if(e.target.dataset.f==='start'){collect();renderDays();renderHotels()}};
+}
+function saveItin(preview){
+  collect();
+  if(!cur.client.name){toast('Please enter the client name');return}
+  const s=db.settings;
+  if(!cur.id){cur.id=uid();db.seq=(+db.seq||1000)+1;cur.quoteNo=`${s.quotePrefix||'QT'}-${db.seq}`;cur.created=today();db.itins.push(JSON.parse(JSON.stringify(cur)))}
+  else{const i=db.itins.findIndex(x=>x.id===cur.id);db.itins[i]=JSON.parse(JSON.stringify(cur))}
+  const l=db.leads.find(x=>x.id===cur.leadId);if(l&&['New','Contacted','Follow-up'].includes(l.status))l.status='Quoted';
+  if(l&&cur.status==='Booked')l.status='Booked';
+  save();toast('Itinerary saved · '+cur.quoteNo);
+  const id=cur.id;go('itins');if(preview)showPdf(id);
+}
+
+/* ---------- itineraries list ---------- */
+function itinRows(){
+  const q=($('#iq')?.value||'').toLowerCase();
+  const rows=db.itins.filter(i=>!q||[i.quoteNo,i.client.name,i.client.phone,i.title].join(' ').toLowerCase().includes(q)).reverse();
+  return rows.map(i=>`<tr><td><b>${esc(i.quoteNo)}</b><small>${fmtD(i.created)}</small></td><td>${esc(i.client.name)}<small>${esc(i.client.phone||'')}</small></td>
+  <td>${esc(i.title||'—')}<small>${i.nights}N / ${(+i.nights||0)+1}D · ${pax(i)}</small></td><td>${fmtD(i.start)}</td><td><b>${money(calc(i).total)}</b></td>
+  <td><select onchange="setItinStatus('${i.id}',this.value)" style="width:auto;padding:5px 8px">${Object.keys(IT_ST).map(s=>`<option ${s===i.status?'selected':''}>${s}</option>`).join('')}</select></td>
+  <td><div class="acts"><button class="btn sm pri" onclick="showPdf('${i.id}')">PDF</button><button class="btn sm grn" onclick="waItin('${i.id}')">WhatsApp</button><button class="btn sm gh" onclick="editItin('${i.id}')">Edit</button><button class="btn sm org" onclick="dupItin('${i.id}')">Copy</button><button class="btn sm red" onclick="delItem('itins','${i.id}')">✕</button></div></td></tr>`).join('')||`<tr><td colspan="7">${empty('No itineraries yet')}</td></tr>`;
+}
+function setItinStatus(id,s){const i=db.itins.find(x=>x.id===id);if(!i)return;i.status=s;const l=db.leads.find(x=>x.id===i.leadId);if(l&&s==='Booked')l.status='Booked';save();toast('Status updated')}
+function dupItin(id){const i=db.itins.find(x=>x.id===id);if(!i)return;const c=JSON.parse(JSON.stringify(i));c.id=uid();db.seq=(+db.seq||1000)+1;c.quoteNo=`${db.settings.quotePrefix||'QT'}-${db.seq}`;c.status='Draft';c.created=today();db.itins.push(c);save();toast('Copied as '+c.quoteNo);go('itins')}
+function waItin(id){
+  const i=db.itins.find(x=>x.id===id),s=db.settings,c=calc(i);
+  const t=`*${s.bizName}* – Tour Quotation\n\nDear ${i.client.name},\nPlease find your itinerary details:\n\n📌 Quote ID: ${i.quoteNo}\n🏔 Package: ${i.title}\n🗓 Travel date: ${fmtD(i.start)}\n⏳ Duration: ${i.nights} Nights / ${(+i.nights||0)+1} Days\n👨‍👩‍👧 Travellers: ${pax(i)}\n💰 Total: ${money(c.total)}\n\n${i.days.map((d,k)=>`Day ${k+1}: ${d.title}`).join('\n')}\n\nThe detailed PDF itinerary is attached.\n– ${s.consultant||s.bizName}${s.phone?' · '+s.phone:''}`;
+  window.open(`https://wa.me/${waNum(i.client.phone)}?text=${encodeURIComponent(t)}`,'_blank');
+}
+
+/* ---------- settings ---------- */
+function saveSettings(){document.querySelectorAll('[data-s]').forEach(e=>db.settings[e.dataset.s]=e.value);save();renderShell();toast('Settings saved');go('settings')}
+function exportData(){const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`travel-crm-backup-${today()}.json`;a.click();URL.revokeObjectURL(a.href)}
+function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let d;try{d=JSON.parse(r.result);if(!d.settings)throw 0}catch(e){return toast('Invalid backup file')}
+  if(!confirm('Replace ALL current cloud data with this backup?'))return;db=fromBackup(d);save().then(()=>{if(!pending)toast('Backup restored to cloud')});renderShell();go('dashboard')};r.readAsText(f);inp.value=''}
+function migrateLocal(){const d=readLocal();if(!d)return;
+  if(!confirm(`Found old data in this browser (${(d.leads||[]).length} leads, ${(d.itins||[]).length} itineraries). Replace the current cloud data with it?`))return;
+  db=fromBackup(d);save().then(()=>{if(!pending){try{localStorage.removeItem(KEY)}catch(e){}toast('Old data moved to the cloud')}});renderShell();go('dashboard')}
+function resetAll(){if(!confirm('Erase ALL leads, destinations, hotels, itineraries and settings from the cloud?'))return;if(!confirm('This cannot be undone. Download a backup first if needed. Erase now?'))return;db=blankDb();save();renderShell();toast('All data erased');go('dashboard')}
+
+/* ---------- PDF ---------- */
+let pdfTitle='Quotation';
+function pdfHTML(it){
+  const s=db.settings,c=calc(it),days=(+it.nights||0)+1,P=s.primary||'#4f46e5',A=s.accent||'#ec4899';
+  const cover=s.cover||(it.days.find(d=>d.img)||{}).img||'';
+  const ovl=`linear-gradient(165deg,${hexA(P,.92)} 0%,${hexA(P,.55)} 45%,${hexA(A,.55)} 100%)`;
+  const chip=(l,v)=>`<div class="q-chip"><small>${l}</small><b>${esc(v)}</b></div>`;
+  const tile=(l,v,k)=>v?`<div class="q-tile" style="--c:${PAL[k%PAL.length]};--t:${hexA(PAL[k%PAL.length],.09)}"><small>${l}</small><b>${esc(v)}</b></div>`:'';
+  let hd=it.start;
+  const hotels=it.hotels.filter(h=>h.hotelId).map(h=>{const H=db.hotels.find(x=>x.id===h.hotelId)||{};const ci=hd,co=hd?addDays(hd,+h.nights||1):'';hd=co;return{...h,H,ci,co}});
+  const pol=(t,txt,k)=>lines(txt).length?`<div class="q-pol" style="--c:${PAL[k]};--t:${hexA(PAL[k],.08)}"><h4>${t}</h4><ul>${lines(txt).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:'';
+  const br=(l,v)=>v?`<div class="r"><span>${l}</span><b>${esc(v)}</b></div>`:'';
+  const valid=s.validity&&it.created?addDays(it.created,+s.validity):'';
+  let k=0;
+  return `<div id="pdf" style="--P:${P};--A:${A}">
+  <section class="q-cover">
+    ${cover?`<img class="q-cbg" src="${esc(cover)}" alt="">`:''}<div class="q-cov" style="background:${ovl}"></div>
+    <div class="q-ctop">${s.logo?`<img class="q-logo" src="${esc(s.logo)}" alt="">`:''}<div><h2>${esc(s.bizName)}</h2>${s.tagline?`<p>${esc(s.tagline)}</p>`:''}</div></div>
+    <div class="q-cmid"><span class="q-pill">Tour Quotation</span><h1>${esc(it.title||'Your Holiday Package')}</h1><p class="q-for">Specially curated for <b>${esc(it.client.name)}</b></p></div>
+    <div class="q-cchips">${chip('Duration',`${it.nights} Nights / ${days} Days`)}${chip('Travel date',fmtD(it.start))}${chip('Travellers',pax(it))}${chip('Quote ID',it.quoteNo)}</div>
+    <div class="q-cfoot">${[s.phone&&'☎ '+s.phone,s.email&&'✉ '+s.email,s.website&&'⌂ '+s.website].filter(Boolean).map(esc).join('<span>•</span>')}</div>
+  </section>
+  <section class="q-flow">
+    <div class="q-bar">${s.logo?`<img src="${esc(s.logo)}" alt="">`:''}<div><h3>${esc(s.bizName)}</h3><small>${esc(s.consultant?'Holiday Consultant: '+s.consultant:s.tagline)}</small></div>
+      <div class="meta"><b>Quote ID:</b> ${esc(it.quoteNo)}<br><b>Date:</b> ${fmtD(it.created)}${valid?`<br><b>Valid till:</b> ${fmtD(valid)}`:''}</div></div>
+    <div class="q-tiles" style="margin-bottom:4mm">${tile('Client',it.client.name,0)}${tile('WhatsApp',it.client.phone,1)}${tile('Email',it.client.email,4)}${tile('Status',it.status==='Draft'?'':it.status,3)}</div>
+    ${s.intro?`<p class="q-intro">${nl(s.intro)}</p>`:''}
+    <h2 class="q-h">Trip at a Glance</h2>
+    <div class="q-tiles">
+      ${tile('Duration',`${it.nights}N / ${days}D`,k++)}${tile('Check-in',fmtD(it.start),k++)}${tile('Check-out',it.start?fmtD(addDays(it.start,+it.nights||0)):'',k++)}${tile('Travellers',pax(it),k++)}
+      ${tile('Rooms',it.rooms?`${it.rooms}${+it.extraBed?` + ${it.extraBed} extra bed`:''}`:'',k++)}${tile('Child w/ bed',+it.cwb?it.cwb:'',k++)}${tile('Child w/o bed',+it.cwob?it.cwob:'',k++)}${tile('Meal plan',it.meal,k++)}
+      ${tile('Vehicle',it.vehicle,k++)}${tile('Pickup',it.pickup,k++)}${tile('Drop',it.drop,k++)}${tile('Flight / Train',it.flight,k++)}
+    </div>
+    <div class="q-price"><div class="q-pl">
+      <div><span>Package cost</span><b>${money(c.cost)}</b></div>
+      ${c.disc?`<div><span>Discount</span><b style="color:#10b981">− ${money(c.disc)}</b></div>`:''}
+      <div><span>GST (${+it.price.gst||0}%)</span><b>${money(c.gstAmt)}</b></div>
+      ${c.adv?`<div><span>Advance to confirm (${+it.price.advance||0}%)</span><b>${money(c.adv)}</b></div><div><span>Balance before arrival</span><b>${money(c.bal)}</b></div>`:''}
+    </div><div class="q-pr"><small>Total package price</small><b>${money(c.total)}</b><span>for ${pax(it)} · ${it.nights}N/${days}D</span></div></div>
+
+    ${it.days.length?`<h2 class="q-h">Day-wise Itinerary</h2>`:''}
+    ${it.days.map((d,i)=>{const col=PAL[i%PAL.length];return `<div class="q-day" style="--c:${col};--t:${hexA(col,.09)}">
+      <div class="q-dl"><div class="q-dn"><small>DAY</small><b>${pad(i+1)}</b></div><div class="q-line"></div></div>
+      <div class="q-dc"><div class="q-dt"><h3>${esc(d.title||'Day '+(i+1))}</h3>${it.start?`<span>${fmtD(addDays(it.start,i))}</span>`:''}</div>
+      ${d.img?`<img class="q-dimg" src="${esc(d.img)}" alt="" onerror="this.remove()">`:''}
+      ${d.desc?`<p>${nl(d.desc)}</p>`:''}${d.overnight?`<div class="q-ov">☾ Overnight: ${esc(d.overnight)}</div>`:''}</div></div>`}).join('')}
+
+    ${hotels.length?`<h2 class="q-h">Your Stays</h2><div class="q-hotels">${hotels.map((h,i)=>{const col=PAL[(i+3)%PAL.length],H=h.H;return `<div class="q-hotel" style="--c:${col}">
+      <div class="q-himg">${H.img?`<img src="${esc(H.img)}" alt="" onerror="this.remove()">`:''}<span class="q-nb">${h.nights||1} Night${+h.nights>1?'s':''}</span></div>
+      <div class="q-hb"><h4>${esc(H.name||'Hotel')}</h4><div class="q-loc">${esc([destName(H.destId),H.location].filter(Boolean).join(' · '))} ${H.stars?`<span class="q-stars">${'★'.repeat(+H.stars)}</span>`:''}</div>
+      ${br('Type',H.type)}${br('Category',H.category)}${br('Room',h.room)}${br('Meal plan',h.meal)}${br('Google rating',H.rating?H.rating+' / 5':'')}${h.ci?br('Stay',`${fmtD(h.ci)} → ${fmtD(h.co)}`):''}
+      </div></div>`}).join('')}</div><p style="font-size:8.5pt;color:#64748b;margin:2mm 0 0">* Hotels are subject to availability; a similar category property will be provided if unavailable.</p>`:''}
+
+    ${(lines(it.inclusions).length||lines(it.exclusions).length)?`<h2 class="q-h">What's Included</h2><div class="q-ie">
+      <div class="q-box q-in"><h4>✓ Inclusions</h4><ul>${lines(it.inclusions).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div class="q-box q-ex"><h4>✕ Exclusions</h4><ul>${lines(it.exclusions).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`:''}
+    ${it.notes?`<h2 class="q-h">Special Note</h2><div class="q-note">${nl(it.notes)}</div>`:''}
+
+    <h2 class="q-h">Policies & Terms</h2>
+    ${pol('Terms & Conditions',s.terms,0)}${pol('Payment Terms',s.payment,2)}${pol('Cancellation Policy',s.cancellation,1)}${pol('Privacy Policy',s.privacy,7)}
+
+    <h2 class="q-h">Payment & Contact</h2>
+    <div class="q-bc">
+      <div class="q-bank"><h4>BANK DETAILS</h4>${br('Account name',s.accName)}${br('Account no.',s.accNo)}${br('IFSC',s.ifsc)}${br('Bank',s.bank)}${br('Branch',s.branch)}${br('UPI / GPay',s.upi)}${!s.accNo&&!s.upi?'<div class="r"><span>Add bank details in Settings</span></div>':''}</div>
+      <div class="q-contact"><h4>Book or customise this trip</h4>
+        ${s.consultant?`<div><b>Consultant:</b> ${esc(s.consultant)}</div>`:''}${s.phone?`<div><b>Call:</b> ${esc(s.phone)}</div>`:''}${s.whatsapp?`<div><b>WhatsApp:</b> ${esc(s.whatsapp)}</div>`:''}
+        ${s.email?`<div><b>Email:</b> ${esc(s.email)}</div>`:''}${s.website?`<div><b>Web:</b> ${esc(shortUrl(s.website))}</div>`:''}${s.address?`<div><b>Address:</b> ${esc(s.address)}</div>`:''}${s.gstin?`<div><b>GSTIN:</b> ${esc(s.gstin)}</div>`:''}
+        ${s.instagram?`<div><b>Instagram:</b> ${esc(shortUrl(s.instagram))}</div>`:''}${s.facebook?`<div><b>Facebook:</b> ${esc(shortUrl(s.facebook))}</div>`:''}
+      </div>
+    </div>
+    ${lines(s.certs).length?`<div class="q-certs">${lines(s.certs).map(u=>`<img src="${esc(u)}" alt="" onerror="this.remove()">`).join('')}</div>`:''}
+    <div class="q-thanks"><h3>We wish you a pleasant & memorable trip!</h3><p>Team ${esc(s.bizName)}${s.phone?' · '+esc(s.phone):''}</p></div>
+  </section></div>`;
+}
+function showPdf(id){
+  const it=db.itins.find(x=>x.id===id);if(!it)return;
+  $('#pdfBody').innerHTML=pdfHTML(it);$('#pdfWrap').style.display='block';$('#pdfWrap').scrollTop=0;document.body.style.overflow='hidden';
+  pdfTitle=`${it.quoteNo} - ${it.client.name||'Quotation'}`.replace(/[\\/:*?"<>|]/g,'');
+  fitPdf();
+}
+function fitPdf(){const w=window.innerWidth,sec=document.querySelectorAll('#pdf section'),pw=210*3.78;const sc=w<pw+20?(w-20)/pw:1;sec.forEach(s=>{s.style.zoom=sc<1?sc:''})}
+window.addEventListener('resize',()=>{if($('#pdfWrap').style.display==='block')fitPdf()});
+window.addEventListener('beforeprint',()=>document.querySelectorAll('#pdf section').forEach(s=>s.style.zoom=''));
+window.addEventListener('afterprint',fitPdf);
+function printPdf(){const t=document.title;document.title=pdfTitle;window.print();setTimeout(()=>document.title=t,1000)}
+function closePdf(){$('#pdfWrap').style.display='none';$('#pdfBody').innerHTML='';document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modal').classList.contains('show'))closeModal();else if($('#pdfWrap').style.display==='block')closePdf()}});
+
+initFirebase();
+</script>
+</body>
+</html>
